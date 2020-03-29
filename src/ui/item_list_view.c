@@ -480,16 +480,15 @@ item_list_view_update_item (ItemListView *ilv, itemPtr item)
 
 	if (ilv->wideView) {
 		const gchar *important = _(" <span background='red' color='black'> important </span> ");
-		gchar *teaser = item_get_teaser (item);
+		gchar *teaser = item_get_teaser (item); /* FIXME: item_get_description and remove the manual ellipsizing ("…") below? */
 		gchar *tmp = title;
 
-		title = g_strdup_printf ("<span weight='%s' size='larger'>%s</span>%s\n<span weight='%s'>%s%s</span><span size='smaller' weight='ultralight'> — %s</span>",
+		title = g_strdup_printf ("<span weight='%s' size='larger'>%s</span>%s\n<span weight='%s'>%s</span><span size='smaller' weight='ultralight'> — %s</span>",
 		                         item->readStatus?"normal":"ultrabold",
 		                         title,
 		                         item->flagStatus?important:"",
 		                         item->readStatus?"ultralight":"light",
 		                         teaser?teaser:"",
-		                         teaser?"…":"",
 					 time_str);
 		g_free (tmp);
 		g_free (teaser);
@@ -835,8 +834,9 @@ item_list_view_create (gboolean wide)
 	g_object_set (headline_column, "resizable", TRUE, NULL);
 	if (wide) {
 		gtk_tree_view_column_set_sort_column_id (headline_column, IS_TIME);
-		g_object_set (renderer, "wrap-mode", PANGO_WRAP_WORD, NULL);
-		g_object_set (renderer, "wrap-width", 300, NULL);
+        /* Provides uniform height for all rows: */
+		g_object_set (renderer, "height", 60, NULL);
+		g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 	} else {
 		gtk_tree_view_column_set_sort_column_id (headline_column, IS_LABEL);
 		g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
