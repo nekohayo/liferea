@@ -480,16 +480,16 @@ item_list_view_update_item (ItemListView *ilv, itemPtr item)
 
 	if (ilv->wideView) {
 		const gchar *important = _(" <span background='red' color='black'> important </span> ");
-		gchar *teaser = item_get_teaser (item); /* FIXME: item_get_description and remove the manual ellipsizing ("…") below? */
+		gchar *teaser = item_get_description (item); /* TODO: use item_get_description instead of being limited to 200 chars? */
 		gchar *tmp = title;
 
-		title = g_strdup_printf ("<span weight='%s' size='larger'>%s</span>%s\n<span weight='%s'>%s</span><span size='smaller' weight='ultralight'> — %s</span>",
+		title = g_strdup_printf ("<span weight='%s' size='larger'>%s</span>%s\n<span weight='%s'>%s</span>",
 		                         item->readStatus?"normal":"ultrabold",
 		                         title,
 		                         item->flagStatus?important:"",
 		                         item->readStatus?"ultralight":"light",
 		                         teaser?teaser:"",
-					 time_str);
+                                );
 		g_free (tmp);
 		g_free (teaser);
 	}
@@ -836,7 +836,7 @@ item_list_view_create (gboolean wide)
 		gtk_tree_view_column_set_sort_column_id (headline_column, IS_TIME);
         /* Provides uniform height for all rows: */
 		g_object_set (renderer, "height", 60, NULL);
-		g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
+		g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
 	} else {
 		gtk_tree_view_column_set_sort_column_id (headline_column, IS_LABEL);
 		g_object_set (renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
@@ -855,8 +855,6 @@ item_list_view_create (gboolean wide)
 	gtk_tree_view_column_set_sizing(column, GTK_TREE_VIEW_COLUMN_GROW_ONLY);
 	g_hash_table_insert (ilv->columns, "date", column);
 	gtk_tree_view_column_set_sort_column_id(column, IS_TIME);
-	if (wide)
-		gtk_tree_view_column_set_visible (column, FALSE);
 
 	conf_get_strv_value (LIST_VIEW_COLUMN_ORDER, &conf_column_order);
 	for (gchar **li = conf_column_order; *li; li++) {
@@ -940,7 +938,7 @@ item_list_view_enable_favicon_column (ItemListView *ilv, gboolean enabled)
 {
 	gtk_tree_view_column_set_visible (g_hash_table_lookup(ilv->columns, "favicon"), enabled);
 
-	// In wide view we want to save vertical space and hide the state column
+	// In wide view we want to save horizontal space and hide the state column
 	if (ilv->wideView)
 		gtk_tree_view_column_set_visible (g_hash_table_lookup(ilv->columns, "state"), !enabled);
 }
